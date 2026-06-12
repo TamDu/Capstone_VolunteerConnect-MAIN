@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Volunteer Opportunity Preferences</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <div class="preferences-area">
+        <section class="form-panel" aria-labelledby="page-title">
+          <div class="intro">
+            <p class="eyebrow">Volunteer Match</p>
+            <h1 id="page-title">Find opportunities that fit your availability.</h1>
+            <p>
+              Share your location, travel range, interests, and preferred time
+              commitment to start matching with relevant volunteer opportunities.
+            </p>
+          </div>
+
+          <form id="preferencesForm" class="preferences-form">
+            <div class="field-grid">
+              <label class="field">
+                <span>Location optional</span>
+                <input
+                  id="location"
+                  name="location"
+                  type="text"
+                  autocomplete="street-address"
+                  placeholder="Zip, City, State or Address"
+                />
+              </label>
+
+              <label class="field">
+                <span>Distance</span>
+                <div class="distance-control">
+                  <input
+                    id="distance"
+                    name="distance"
+                    type="range"
+                    min="1"
+                    max="100"
+                    step="1"
+                    value="20"
+                  />
+                  <input
+                    id="distanceNumber"
+                    name="distanceNumber"
+                    type="number"
+                    min="1"
+                    max="100"
+                    step="1"
+                    value="20"
+                    aria-label="Distance in miles"
+                  />
+                  <span>miles</span>
+                </div>
+              </label>
+            </div>
+
+            <fieldset>
+              <legend>Category preferences</legend>
+              <div class="checkbox-grid">
+                <label><input type="checkbox" name="categories" value="Community & Social Services" /> Community & Social Services</label>
+                <label><input type="checkbox" name="categories" value="Education & Literacy" /> Education & Literacy</label>
+                <label><input type="checkbox" name="categories" value="Health & Human Services" /> Health & Human Services</label>
+                <label><input type="checkbox" name="categories" value="Environmental & Animal Welfare" /> Environmental & Animal Welfare</label>
+                <label><input type="checkbox" name="categories" value="Arts, Culture & Heritage" /> Arts, Culture & Heritage</label>
+                <label><input type="checkbox" name="categories" value="Sports & Recreation" /> Sports & Recreation</label>
+                <label><input type="checkbox" name="categories" value="Emergency & Disaster Relief" /> Emergency & Disaster Relief</label>
+                <label><input type="checkbox" name="categories" value="International & Global Development" /> International & Global Development</label>
+                <label><input type="checkbox" name="categories" value="Youth & Family Services" /> Youth & Family Services</label>
+                <label><input type="checkbox" name="categories" value="Senior Services" /> Senior Services</label>
+                <label><input type="checkbox" name="categories" value="Skills-Based & Professional" /> Skills-Based & Professional</label>
+                <label><input type="checkbox" name="categories" value="Advocacy & Civic Engagement" /> Advocacy & Civic Engagement</label>
+                <label><input type="checkbox" name="categories" value="Faith-Based & Religious" /> Faith-Based & Religious</label>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Type of commitment</legend>
+              <div class="segmented-options" role="radiogroup" aria-label="Type of commitment">
+                <label>
+                  <input type="radio" name="commitment" value="Single day" />
+                  <span>Single day</span>
+                </label>
+                <label>
+                  <input type="radio" name="commitment" value="Part time" />
+                  <span>Part time</span>
+                </label>
+                <label>
+                  <input type="radio" name="commitment" value="Full time" />
+                  <span>Full time</span>
+                </label>
+                <label>
+                  <input type="radio" name="commitment" value="Weekend" />
+                  <span>Weekend</span>
+                </label>
+                <label>
+                  <input type="radio" name="commitment" value="Weeknights" />
+                  <span>Weeknights</span>
+                </label>
+                <label>
+                  <input type="radio" name="commitment" value="Virtual" />
+                  <span>Virtual</span>
+                </label>
+                <label>
+                  <input type="radio" name="commitment" value="In-person" />
+                  <span>In-person</span>
+                </label>
+              </div>
+            </fieldset>
+
+            <div class="actions">
+              <button type="submit">Save preferences</button>
+              <button type="reset" class="secondary">Reset</button>
+            </div>
+          </form>
+        </section>
+
+        <aside class="summary-panel" aria-live="polite">
+          <h2>Captured preferences</h2>
+          <div id="summary" class="summary-empty">
+            Submit the form to preview the user preference payload.
+          </div>
+        </aside>
+      </div>
+
+      <section class="results-panel" aria-labelledby="results-title">
+        <div class="results-header">
+          <div>
+            <p class="eyebrow">Points of Light Engage</p>
+            <h2 id="results-title">Volunteer opportunities</h2>
+          </div>
+          <a
+            id="engageSearchLink"
+            class="external-search-link"
+            href="https://engage.pointsoflight.org/search"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Open Engage search
+          </a>
+        </div>
+        <div id="results" class="results-empty">
+          Save preferences to search matching opportunities.
+        </div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
