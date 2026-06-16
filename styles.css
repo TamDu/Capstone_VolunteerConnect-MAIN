@@ -545,7 +545,10 @@ body {
 .pill-label {
   flex: 1;
   min-width: 0;
-  overflow-wrap: break-word;
+  /* Wrap only at spaces between words, never mid-word
+     (e.g. keep "Environmental" whole instead of "Environment-al"). */
+  overflow-wrap: normal;
+  word-break: normal;
 }
 
 .category-pill:hover {
