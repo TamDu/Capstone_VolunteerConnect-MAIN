@@ -359,8 +359,12 @@ els.resetBtn.addEventListener("click", () => {
   state.location = "";
   state.radius = DEFAULTS.radius;
   state.sortBy = DEFAULTS.sortBy;
-  state.categories = new Set(CATEGORY_KEYS);
-  state.commitments = new Set(COMMITMENT_KEYS);
+  // Mutate the existing Sets in place — the pill click handlers close over these
+  // instances, so replacing them would silently detach the pills from state.
+  state.categories.clear();
+  CATEGORY_KEYS.forEach((key) => state.categories.add(key));
+  state.commitments.clear();
+  COMMITMENT_KEYS.forEach((key) => state.commitments.add(key));
 
   els.locationInput.value = "";
   setLocationStatus("", false);
