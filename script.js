@@ -743,6 +743,52 @@ async function normalizeVolunteerConnectorVolop(volop) {
   };
 }
 
+const EARTH_RADIUS_MILES = 3958.8;
+
+function haversineMiles(lat1, lon1, lat2, lon2) {
+  const toRad = (deg) => (deg * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+  return EARTH_RADIUS_MILES * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// VolunteerConnector only narrows by location via a postal-code `pc` param, so a
+// city search runs Canada-wide. Filter the results to the chosen radius here,
+// using the coordinates each listing carries — keeping remote/national ones
+// regardless of distance (same "near OR remote" rule used for Engage).
+function volunteerConnectorWithinRange(volop, preferences) {
+  // No resolved search location: can't constrain, so keep everything.
+  if (!preferences.geo) {
+    return true;
+  }
+
+  if (volop.remote_or_online) {
+    return true;
+  }
+
+  const audience = volop.audience || {};
+  if (audience.scope === "national") {
+    return true; // available anywhere in Canada, not location-bound
+  }
+
+  if (Number.isFinite(audience.latitude) && Number.isFinite(audience.longitude)) {
+    const distance = haversineMiles(
+      preferences.geo.latitude,
+      preferences.geo.longitude,
+      audience.latitude,
+      audience.longitude,
+    );
+    return distance <= preferences.distanceMiles;
+  }
+
+  // In-person but no coordinates to verify against — drop it, since the
+  // Canada-wide search can't confirm it's anywhere near the searched location.
+  return false;
+}
+
 async function searchVolunteerConnector(preferences) {
   if (!countryAllows(preferences, "ca")) {
     return {
@@ -771,14 +817,17 @@ async function searchVolunteerConnector(preferences) {
   }
 
   const payload = await response.json();
+  const inRange = (payload.results || []).filter((volop) =>
+    volunteerConnectorWithinRange(volop, preferences),
+  );
   const hits = await Promise.all(
-    (payload.results || [])
+    inRange
       .slice(0, VC_PAGE_SIZE_TARGET)
-      .map(volop => normalizeVolunteerConnectorVolop(volop))
+      .map((volop) => normalizeVolunteerConnectorVolop(volop)),
   );
 
   return {
-    total: payload.count || 0,
+    total: hits.length,
     hits,
   };
 }
