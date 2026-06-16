@@ -61,14 +61,28 @@
         </div>
 
         <div class="filter-group">
-          <label class="filter-label">Category</label>
+          <div class="filter-label-row">
+            <span class="filter-label">Category</span>
+            <div class="pill-actions">
+              <button id="category-select-all" class="pill-action" type="button">Select all</button>
+              <span class="pill-action-sep" aria-hidden="true">·</span>
+              <button id="category-clear" class="pill-action" type="button">Clear</button>
+            </div>
+          </div>
           <div class="category-pills" id="category-pills" role="group" aria-label="Filter by category">
             <!-- populated from CATEGORY_META -->
           </div>
         </div>
 
         <div class="filter-group">
-          <label class="filter-label">Type of commitment</label>
+          <div class="filter-label-row">
+            <span class="filter-label">Type of commitment</span>
+            <div class="pill-actions">
+              <button id="commitment-select-all" class="pill-action" type="button">Select all</button>
+              <span class="pill-action-sep" aria-hidden="true">·</span>
+              <button id="commitment-clear" class="pill-action" type="button">Clear</button>
+            </div>
+          </div>
           <div class="category-pills" id="commitment-pills" role="group" aria-label="Filter by type of commitment">
             <!-- populated from COMMITMENT_META -->
           </div>

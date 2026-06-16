@@ -42,7 +42,11 @@ const els = {
   radiusSlider: document.querySelector("#radius-slider"),
   radiusInput: document.querySelector("#radius-input"),
   categoryPillsContainer: document.querySelector("#category-pills"),
+  categorySelectAllBtn: document.querySelector("#category-select-all"),
+  categoryClearBtn: document.querySelector("#category-clear"),
   commitmentPillsContainer: document.querySelector("#commitment-pills"),
+  commitmentSelectAllBtn: document.querySelector("#commitment-select-all"),
+  commitmentClearBtn: document.querySelector("#commitment-clear"),
   sortSelect: document.querySelector("#sort-select"),
   resetBtn: document.querySelector("#reset-btn"),
   resultsGrid: document.querySelector("#results-grid"),
@@ -111,6 +115,19 @@ function activateAllPills(container) {
     pill.classList.add("active");
     pill.setAttribute("aria-pressed", "true");
   });
+}
+
+// Select-all / clear a pill group: toggle every pill and sync its backing Set.
+function setAllPills(container, selectedSet, keys, active) {
+  container.querySelectorAll(".category-pill").forEach((pill) => {
+    pill.classList.toggle("active", active);
+    pill.setAttribute("aria-pressed", String(active));
+  });
+  selectedSet.clear();
+  if (active) {
+    keys.forEach((key) => selectedSet.add(key));
+  }
+  scheduleSearch();
 }
 
 /* ---------- Radius ---------- */
@@ -293,6 +310,22 @@ els.radiusInput.addEventListener("input", (event) => {
 
 els.radiusInput.addEventListener("blur", () => {
   els.radiusInput.value = String(state.radius);
+});
+
+els.categorySelectAllBtn.addEventListener("click", () => {
+  setAllPills(els.categoryPillsContainer, state.categories, CATEGORY_KEYS, true);
+});
+
+els.categoryClearBtn.addEventListener("click", () => {
+  setAllPills(els.categoryPillsContainer, state.categories, CATEGORY_KEYS, false);
+});
+
+els.commitmentSelectAllBtn.addEventListener("click", () => {
+  setAllPills(els.commitmentPillsContainer, state.commitments, COMMITMENT_KEYS, true);
+});
+
+els.commitmentClearBtn.addEventListener("click", () => {
+  setAllPills(els.commitmentPillsContainer, state.commitments, COMMITMENT_KEYS, false);
 });
 
 els.sortSelect.addEventListener("change", (event) => {
