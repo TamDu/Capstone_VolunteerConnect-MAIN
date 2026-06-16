@@ -221,17 +221,39 @@ async function runSearch() {
   }
 }
 
+// Ordering buckets for the distance sort, so nearest comes first and
+// remote/anywhere listings sink to the bottom:
+//   0 = located with a known distance (sorted nearest-first within the bucket)
+//   1 = located but distance unknown (no coordinates to measure)
+//   2 = remote / anywhere (not location-bound) → always last
+function distanceRank(hit) {
+  const presence = hit.presence;
+  if (presence === "Remote" || presence === "Anywhere") {
+    return { bucket: 2, distance: 0 };
+  }
+  if (Number.isFinite(hit.distanceMiles)) {
+    return { bucket: 0, distance: hit.distanceMiles };
+  }
+  return { bucket: 1, distance: 0 };
+}
+
 // Sort the cached hits per the dropdown, then render. Sorting is purely
 // client-side, so changing sort order never re-hits the network.
 function sortHits(hits, sortBy) {
   switch (sortBy) {
     case "alphabetical":
-      // TODO: not yet built — falls back to relevance order for now.
-      return hits;
+      return [...hits].sort((a, b) =>
+        (a.title || "").localeCompare(b.title || "", undefined, { sensitivity: "base" }),
+      );
     case "distance":
-      // TODO: not yet built — listings lack a uniform distance value, so this
-      // falls back to relevance order until per-result distances are computed.
-      return hits;
+      return [...hits].sort((a, b) => {
+        const rankA = distanceRank(a);
+        const rankB = distanceRank(b);
+        if (rankA.bucket !== rankB.bucket) {
+          return rankA.bucket - rankB.bucket;
+        }
+        return rankA.distance - rankB.distance;
+      });
     case "relevance":
     default:
       return hits; // upstream merge order already reflects relevance
@@ -680,6 +702,7 @@ async function searchEngage(preferences) {
     aroundLatLng,
     aroundRadius: Math.round(preferences.distanceMiles * 1609),
     facetFilters: buildFacetFilters(preferences),
+    getRankingInfo: true, // exposes per-hit geo distance, used by the distance sort
   };
 
   // Remote work isn't location-bound, so include remote listings regardless of
@@ -733,11 +756,19 @@ async function runEngageSearch(body) {
 
   return {
     total: payload.nbHits || 0,
-    hits: (payload.hits || []).filter(hasContactPath).slice(0, 10),
+    hits: (payload.hits || [])
+      .filter(hasContactPath)
+      .slice(0, 10)
+      .map((hit) => {
+        // When the query requested ranking info, attach the geo distance (the
+        // API returns meters) so results can be sorted nearest-first.
+        const meters = hit._rankingInfo?.matchedGeoLocation?.distance;
+        return Number.isFinite(meters) ? { ...hit, distanceMiles: meters / 1609.34 } : hit;
+      }),
   };
 }
 
-async function normalizeVolunteerConnectorVolop(volop) {
+async function normalizeVolunteerConnectorVolop(volop, preferences) {
   const audience = volop.audience || {};
   const regionLabel = Array.isArray(audience.regions) && audience.regions.length > 0
     ? audience.regions.join(", ")
@@ -752,6 +783,23 @@ async function normalizeVolunteerConnectorVolop(volop) {
     : audience.scope === "national"
     ? "Anywhere"
     : "In-Person";
+
+  // Distance from the searched location (for the distance sort). Only meaningful
+  // for location-bound listings that carry coordinates.
+  let distanceMiles;
+  if (
+    preferences?.geo &&
+    presence === "In-Person" &&
+    Number.isFinite(audience.latitude) &&
+    Number.isFinite(audience.longitude)
+  ) {
+    distanceMiles = haversineMiles(
+      preferences.geo.latitude,
+      preferences.geo.longitude,
+      audience.latitude,
+      audience.longitude,
+    );
+  }
 
   const organization = volop.organization
     ? [
@@ -770,6 +818,7 @@ async function normalizeVolunteerConnectorVolop(volop) {
     detailURL: volop.url,
     applyUrl: volop.url,
     presence,
+    distanceMiles,
     duration_kind: volop.duration || volop.dates || "",
     locs: locationLabel ? [{ geocode_string: locationLabel }] : [],
     organizations: organization,
@@ -856,7 +905,7 @@ async function searchVolunteerConnector(preferences) {
   const hits = await Promise.all(
     inRange
       .slice(0, VC_PAGE_SIZE_TARGET)
-      .map((volop) => normalizeVolunteerConnectorVolop(volop)),
+      .map((volop) => normalizeVolunteerConnectorVolop(volop, preferences)),
   );
 
   return {
