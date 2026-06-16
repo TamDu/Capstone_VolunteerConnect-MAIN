@@ -140,7 +140,7 @@ function updateRadiusFill() {
 }
 
 function setRadius(value) {
-  const clamped = Math.min(100, Math.max(1, Number(value) || DEFAULTS.radius));
+  const clamped = Math.min(50, Math.max(1, Number(value) || DEFAULTS.radius));
   state.radius = clamped;
   els.radiusSlider.value = String(clamped);
   els.radiusInput.value = String(clamped);
